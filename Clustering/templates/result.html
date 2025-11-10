@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Cluster Results</title>
+  <style>
+    body {
+      background: linear-gradient(135deg, #c7d2fe 0%, #f0fdfa 100%);
+      font-family: 'Inter', sans-serif;
+      color: #1f2937;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+    }
+    .card {
+      background: #fff;
+      border-radius: 16px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.1);
+      padding: 40px 50px;
+      text-align: center;
+      max-width: 400px;
+      width: 100%;
+    }
+    h2 { color: #4f46e5; margin-bottom: 20px; }
+    p { font-size: 18px; margin: 10px 0; }
+    .value { font-weight: 700; color: #1d4ed8; }
+    a {
+      display: inline-block;
+      margin-top: 20px;
+      padding: 8px 14px;
+      border-radius: 8px;
+      background: #6366f1;
+      color: white;
+      text-decoration: none;
+      font-weight: 600;
+      transition: background 0.2s ease;
+    }
+    a:hover { background: #818cf8; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h2>🔍 Cluster Results</h2>
+    <p><b>K-Means:</b> <span class="value">{{ kmeans }}</span></p>
+    <p><b>GMM:</b> <span class="value">{{ gmm }}</span></p>
+    {% if error %}
+    <p style="color: #dc2626;">Error: {{ error }}</p>
+    {% endif %}
+    <a href="/">← Back</a>
+  </div>
+</body>
+</html>
+

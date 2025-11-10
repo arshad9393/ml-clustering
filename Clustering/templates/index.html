@@ -1,0 +1,269 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Wholesale Customer Clustering</title>
+  <style>
+    :root {
+      --bg: #f3f4f6;
+      --card: #ffffff;
+      --accent: #6366f1;
+      --accent-light: #a5b4fc;
+      --text: #1f2937;
+      --muted: #6b7280;
+      --ok: #16a34a;
+      --danger: #dc2626;
+    }
+
+    * { box-sizing: border-box; }
+    html, body { height: 100%; margin: 0; font-family: 'Inter', sans-serif; color: var(--text); }
+
+    body {
+      background: linear-gradient(135deg, #c7d2fe 0%, #f0fdfa 100%);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+
+    .container {
+      background: var(--card);
+      border-radius: 18px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.1);
+      max-width: 950px;
+      width: 100%;
+      padding: 30px 40px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 30px;
+    }
+
+    h1 {
+      font-size: 24px;
+      margin: 0;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--accent);
+    }
+
+    p.subtitle {
+      color: var(--muted);
+      font-size: 14px;
+      margin-bottom: 16px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px 18px;
+    }
+
+    label {
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    input[type="number"] {
+      width: 100%;
+      padding: 10px 12px;
+      border-radius: 10px;
+      border: 1px solid #d1d5db;
+      font-size: 14px;
+      transition: all 0.2s ease;
+    }
+
+    input[type="number"]:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(99,102,241,0.2);
+      outline: none;
+    }
+
+    .actions {
+      display: flex;
+      gap: 10px;
+      margin-top: 16px;
+    }
+
+    button {
+      cursor: pointer;
+      padding: 10px 16px;
+      border-radius: 8px;
+      font-weight: 600;
+      border: none;
+      font-size: 14px;
+      transition: all 0.2s ease;
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background: var(--accent-light);
+    }
+
+    .btn-reset {
+      background: transparent;
+      border: 1px solid #d1d5db;
+      color: var(--muted);
+    }
+
+    .btn-reset:hover {
+      border-color: var(--accent-light);
+      color: var(--accent);
+    }
+
+    .right {
+      display: grid;
+      align-content: center;
+      background: linear-gradient(135deg, #eef2ff 0%, #faf5ff 100%);
+      border-radius: 14px;
+      padding: 20px;
+    }
+
+    .panel {
+      text-align: center;
+    }
+
+    .result-box {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      margin-bottom: 12px;
+    }
+
+    .result {
+      background: white;
+      border: 1px solid #e5e7eb;
+      border-radius: 10px;
+      padding: 14px;
+      box-shadow: inset 0 0 4px rgba(0,0,0,0.04);
+    }
+
+    .label {
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .value {
+      font-size: 26px;
+      font-weight: 700;
+      color: var(--accent);
+    }
+
+    .note {
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 8px;
+    }
+
+    #error {
+      font-size: 13px;
+      color: var(--danger);
+      margin-top: 10px;
+      min-height: 18px;
+    }
+
+    @media (max-width: 850px) {
+      .container { grid-template-columns: 1fr; padding: 24px; }
+      .right { order: -1; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="left">
+      <h1>🧩 Wholesale Clustering</h1>
+      <p class="subtitle">Enter yearly spending per category to predict customer segments using K-Means and GMM models.</p>
+
+      <form id="cluster-form">
+        <div class="grid">
+          <div><label>Fresh</label><input type="number" id="Fresh" min="0" placeholder="e.g. 12000" required></div>
+          <div><label>Milk</label><input type="number" id="Milk" min="0" placeholder="e.g. 5000" required></div>
+          <div><label>Grocery</label><input type="number" id="Grocery" min="0" placeholder="e.g. 20000" required></div>
+          <div><label>Frozen</label><input type="number" id="Frozen" min="0" placeholder="e.g. 3000" required></div>
+          <div><label>Detergents_Paper</label><input type="number" id="Detergents_Paper" min="0" placeholder="e.g. 2500" required></div>
+          <div><label>Delicassen</label><input type="number" id="Delicassen" min="0" placeholder="e.g. 800" required></div>
+        </div>
+        <div class="actions">
+          <button type="submit" class="btn-primary">Predict Clusters</button>
+          <button type="reset" class="btn-reset">Reset</button>
+        </div>
+        <div id="error"></div>
+      </form>
+    </div>
+
+    <div class="right">
+      <div class="panel">
+        <div class="result-box">
+          <div class="result">
+            <div class="label">K-Means Cluster</div>
+            <div id="kmeans" class="value">-</div>
+          </div>
+          <div class="result">
+            <div class="label">GMM Cluster</div>
+            <div id="gmm" class="value">-</div>
+          </div>
+        </div>
+        <p class="note">Enter valid numbers (≥ 0). Results appear instantly without page reload.</p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const form = document.getElementById('cluster-form');
+    const err = document.getElementById('error');
+    const outK = document.getElementById('kmeans');
+    const outG = document.getElementById('gmm');
+
+    function readNum(id) {
+      const val = document.getElementById(id).value.trim();
+      if (!val || isNaN(val) || Number(val) < 0) throw new Error(`Invalid input for ${id}`);
+      return Number(val);
+    }
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      err.textContent = '';
+      outK.textContent = '...';
+      outG.textContent = '...';
+
+      try {
+        const data = {
+          Fresh: readNum('Fresh'),
+          Milk: readNum('Milk'),
+          Grocery: readNum('Grocery'),
+          Frozen: readNum('Frozen'),
+          Detergents_Paper: readNum('Detergents_Paper'),
+          Delicassen: readNum('Delicassen'),
+        };
+
+        const res = await fetch('/predict', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data),
+        });
+
+        const json = await res.json();
+        if (!res.ok) throw new Error(json.error || 'Error fetching result');
+
+        outK.textContent = json.kmeans;
+        outG.textContent = json.gmm;
+      } catch (ex) {
+        err.textContent = ex.message;
+        outK.textContent = '-';
+        outG.textContent = '-';
+      }
+    });
+
+    form.addEventListener('reset', () => {
+      err.textContent = '';
+      outK.textContent = '-';
+      outG.textContent = '-';
+    });
+  </script>
+</body>
+</html>
